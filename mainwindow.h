@@ -1,20 +1,29 @@
+#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QPropertyAnimation>
 #include <QMainWindow>
-#include <QLabel>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QTimer>
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr)
-        : QMainWindow(parent)
-    {
-        setWindowTitle("Fruit Ninja");
-        setFixedSize(800, 600);
+    explicit MainWindow(QWidget *parent = nullptr);
 
-        /*QLabel *scoreLabel = new QLabel("Score: 0", this);
-        scoreLabel->setGeometry(10, 10, 100, 30);*/
-    }
+private:
+    QPropertyAnimation *animation;
+    QGraphicsScene *scene;
+    QGraphicsView *view;
+    QTimer *timer;
+
+private slots:
+    void spawnFruit();
+
+protected:
+    void mouseMoveEvent(QMouseEvent *event) override;
 };
+
+#endif // MAINWINDOW_H

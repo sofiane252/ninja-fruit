@@ -5,5 +5,6 @@
 TEMPLATE = app
 TARGET = ninja-fruit
 QT = core gui widgets
-SOURCES += main.cpp 
+HEADERS += mainwindow.h fruit.h
+SOURCES += mainwindow.cpp main.cpp fruit.cpp
 
