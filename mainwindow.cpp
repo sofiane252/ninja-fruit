@@ -3,17 +3,35 @@
 #include <QGraphicsPixmapItem>
 #include <QRandomGenerator>
 #include <QMouseEvent>
+#include <QCoreApplication>
+#include <QMessageBox>
+#include <QStatusBar>
 
-
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent) 
+{
     scene = new QGraphicsScene(this);
-        view = new QGraphicsView(scene, this);
-    view->setRenderHint(QPainter::Antialiasing);
-    view->setMouseTracking(true);
+    view = new QGraphicsView(scene, this);
 
     setCentralWidget(view);
-    setWindowTitle("Fruit Ninja");
-    resize(800, 600);
+    view->setRenderHint(QPainter::Antialiasing);
+    view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    view->setMouseTracking(true);
+
+    lives = 5; //nombre de vie du joueur
+
+    // Taille personnalisée de la fenêtre
+    int windowWidth = 1000;
+    int windowHeight = 800;
+    setFixedSize(windowWidth, windowHeight);
+
+    // Ajustement de la taille de la scène pour correspondre à la taille de la fenêtre
+    scene->setSceneRect(0, 0, windowWidth, windowHeight);
+
+    // Création et ajout du label pour afficher les vies à la barre de statut
+    livesLabel = new QLabel(this);
+    updateLivesLabel();
+    statusBar()->addWidget(livesLabel);
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::spawnFruit);
@@ -32,48 +50,94 @@ void MainWindow::spawnFruit() {
         };
     QString fruitImage = fruitImages[QRandomGenerator::global()->bounded(fruitImages.size())];
 
+    int fruitSpeed = 3000; // vitesse de la chute
     int fruitWidth = 100;
     int fruitHeight = 100;
     QPixmap originalPixmap(fruitImage);
 
     QPixmap scaledPixmap = originalPixmap.scaled(fruitWidth, fruitHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    
     Fruit *fruit = new Fruit(scaledPixmap);
-    fruit->setPos(QRandomGenerator::global()->bounded(scene->width()
-    - fruit->boundingRect().width()), scene->height());
-    scene->addItem(fruit);
+    bool noCollision = false;
+    int maxTries = 10;
+    int tries = 0;
 
-   animation = new QPropertyAnimation(fruit, "pos");
-    animation->setDuration(2000);
-    animation->setStartValue(fruit->pos());
-    animation->setEndValue(QPointF(fruit->x(), 0 - fruit->boundingRect().height()));
-    animation->setEasingCurve(QEasingCurve::InQuad);
+    while (!noCollision && tries < maxTries) {
+        qreal x = QRandomGenerator::global()->bounded(scene->width() - fruit->boundingRect().width());
+        qreal y = scene->height();
 
-    connect(animation, &QPropertyAnimation::finished, [=]() {
-        animation->targetObject()->deleteLater();
-        animation->deleteLater();
-    });
-    animation->start();
+        fruit->setPos(x, y);
+
+        noCollision = true;
+        for (QGraphicsItem *item : scene->items()) {
+            if (item != fruit && item->collidesWithItem(fruit)) {
+                noCollision = false;
+                break;
+            }
+        }
+
+        tries++;
+    }
+
+    if (noCollision) {
+        scene->addItem(fruit);
+
+        animation = new QPropertyAnimation(fruit, "pos");
+        animation->setDuration(fruitSpeed);
+         animation->setStartValue(QPointF(fruit->x(), 0 - fruit->boundingRect().height())); // Position de départ en haut de la fenêtre
+        animation->setEndValue(QPointF(fruit->x(), scene->height())); // Position finale en bas de la fenêtre
+        animation->setEasingCurve(QEasingCurve::InQuad);
+
+        // Connectez le signal 'finished' de l'animation pour détecter quand un fruit atteint le bas de la fenêtre
+        connect(animation, &QPropertyAnimation::finished, [=]() {
+            // Vérifiez si le fruit est toujours dans la scène (il n'a pas été coupé)
+            if (scene->items().contains(fruit)) {
+                // Décrémentez le compteur de vies et mettez à jour le label
+                lives--;
+                updateLivesLabel();
+
+                // Vérifiez si le joueur a perdu toutes ses vies
+                if (lives <= 0) {
+                    // Affichez un message indiquant que le joueur a perdu et quittez le jeu
+                    QMessageBox::information(this, "Game Over", "Vous avez perdu toutes vos vies. Le jeu va maintenant se terminer.");
+                    QCoreApplication::quit();
+                }
+            }
+            //animation->targetObject()->deleteLater();
+            //animation->deleteLater();
+            fruit->deleteLater();
+            animation->deleteLater();
+        });
+        animation->start();
+    } else {
+        delete fruit;
+    }
+
 }
 
+void MainWindow::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        QPointF mousePos = event->pos();
+        QGraphicsItem *itemToDelete = nullptr;
 
-void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-    QPointF mousePos = event->pos();
-    QGraphicsItem *itemToDelete = nullptr;
+        // Parcours de tous les éléments de la scène
+        for (QGraphicsItem *item : scene->items()) {
+            if (item->contains(item->mapFromScene(mousePos))) {
+                itemToDelete = item;
+                break;
+            }
+        }
 
-    // Parcours de tous les éléments de la scène
-    for (QGraphicsItem *item : scene->items()) {
-        if (item->contains(item->mapFromScene(mousePos))) {
-            itemToDelete = item;
-            break;
+        // Si un fruit a été touché par le curseur, supprimez-le de la scène
+        if (itemToDelete) {
+            scene->removeItem(itemToDelete);
+            delete itemToDelete;
         }
     }
 
-    // Si un fruit a été touché par le curseur, supprimez-le de la scène
-    if (itemToDelete) {
-        scene->removeItem(itemToDelete);
-        delete itemToDelete;
-    }
-
-    QMainWindow::mouseMoveEvent(event);
+    QMainWindow::mousePressEvent(event);
 }
 
+void MainWindow::updateLivesLabel() {
+    livesLabel->setText("Vies : " + QString::number(lives));
+}
