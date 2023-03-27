@@ -21,12 +21,21 @@ MainWindow::MainWindow(QWidget *parent)
     lives = 5; //nombre de vie du joueur
 
     // Taille personnalisée de la fenêtre
-    int windowWidth = 1000;
-    int windowHeight = 800;
+    int windowWidth = 1080;
+    int windowHeight = 720;
     setFixedSize(windowWidth, windowHeight);
+
+    // Retirer la scrollbar (vue)
+    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     // Ajustement de la taille de la scène pour correspondre à la taille de la fenêtre
     scene->setSceneRect(0, 0, windowWidth, windowHeight);
+
+    // Mettre background
+    QPixmap backgroundImage("./assets/img/background.jpg");
+    QBrush backgroundBrush(backgroundImage);
+    view->setBackgroundBrush(backgroundBrush);
 
     // Création et ajout du label pour afficher les vies à la barre de statut
     livesLabel = new QLabel(this);
@@ -46,13 +55,13 @@ void MainWindow::spawnFruit() {
         "./assets/img/cerise.png",
         "./assets/img/fraise.png",
         "./assets/img/les-raisins.png",
-        ".assets/img/pomme.png"
+        "./assets/img/pomme.png"
         };
     QString fruitImage = fruitImages[QRandomGenerator::global()->bounded(fruitImages.size())];
 
-    int fruitSpeed = 3000; // vitesse de la chute
-    int fruitWidth = 100;
-    int fruitHeight = 100;
+    int fruitSpeed = 2000; // vitesse de la chute
+    int fruitWidth = 80;
+    int fruitHeight = 80;
     QPixmap originalPixmap(fruitImage);
 
     QPixmap scaledPixmap = originalPixmap.scaled(fruitWidth, fruitHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
@@ -99,8 +108,17 @@ void MainWindow::spawnFruit() {
                 // Vérifiez si le joueur a perdu toutes ses vies
                 if (lives <= 0) {
                     // Affichez un message indiquant que le joueur a perdu et quittez le jeu
-                    QMessageBox::information(this, "Game Over", "Vous avez perdu toutes vos vies. Le jeu va maintenant se terminer.");
-                    QCoreApplication::quit();
+                    // QMessageBox::information(this, "Game Over", "Vous avez perdu toutes vos vies. Le jeu va maintenant se terminer.");
+                    // Affichez une boîte de dialogue pour demander au joueur s'il veut recommencer ou quitter
+                    QMessageBox::StandardButton reply;
+                    reply = QMessageBox::question(this, "Recommencer", "Voulez-vous recommencer le jeu ?", QMessageBox::Yes|QMessageBox::No);
+                    if (reply == QMessageBox::Yes) {
+                        // Si le joueur a choisi de recommencer, redémarrez le jeu
+                        restartGame();
+                    } else {
+                        // Si le joueur a choisi de quitter, quittez le jeu
+                        QCoreApplication::quit();
+                    }
                 }
             }
             //animation->targetObject()->deleteLater();
@@ -136,6 +154,15 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
     }
 
     QMainWindow::mousePressEvent(event);
+}
+
+void MainWindow::restartGame() {
+    // Réinitialiser les variables du jeu
+    lives = 5;
+    updateLivesLabel();
+
+    // Redémarrer le timer
+    timer->start(1000);
 }
 
 void MainWindow::updateLivesLabel() {

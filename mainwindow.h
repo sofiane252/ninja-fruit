@@ -25,6 +25,7 @@ private:
 private slots:
     void spawnFruit();
     void updateLivesLabel();
+    void restartGame();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
