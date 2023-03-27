@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::spawnFruit);
-    timer->start(1000);
+    timer->start(700);
 }
 
 void MainWindow::spawnFruit() {
@@ -46,7 +46,7 @@ void MainWindow::spawnFruit() {
         "./assets/img/cerise.png",
         "./assets/img/fraise.png",
         "./assets/img/les-raisins.png",
-        ".assets/img/pomme.png"
+        "./assets/img/pomme.png"
         };
     QString fruitImage = fruitImages[QRandomGenerator::global()->bounded(fruitImages.size())];
 
