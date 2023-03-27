@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::spawnFruit);
-    timer->start(1000);
+    timer->start(700);
 }
 
 void MainWindow::spawnFruit() {
