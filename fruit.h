@@ -25,4 +25,4 @@ private:
 
 };
 
-#endif // FRUIT_H
+#endif

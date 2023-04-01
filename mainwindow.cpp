@@ -34,7 +34,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    // Ajustement de la taille de la scène pour correspondre à la taille de la fenêtre
     scene->setSceneRect(0, 0, windowWidth, windowHeight);
 
     scoreLabel = new QLabel(this);
@@ -125,8 +124,8 @@ void MainWindow::spawnFruit() {
 
         animation = new QPropertyAnimation(fruit, "pos");
         animation->setDuration(getSpeed());
-        animation->setStartValue(QPointF(fruit->x(), 0 - fruit->boundingRect().height())); // Position de départ en haut de la fenêtre
-        animation->setEndValue(QPointF(fruit->x(), scene->height())); // Position finale en bas de la fenêtre
+        animation->setStartValue(QPointF(fruit->x(), 0 - fruit->boundingRect().height()));
+        animation->setEndValue(QPointF(fruit->x(), scene->height()));
         animation->setEasingCurve(QEasingCurve::InQuad);
 
         
@@ -157,7 +156,6 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
         QPointF mousePos = event->pos();
         QGraphicsItem *itemToDelete = nullptr;
 
-        // Parcours de tous les éléments de la scène
         for (QGraphicsItem *item : scene->items()) {
             if (item->contains(item->mapFromScene(mousePos))) {
                 itemToDelete = item;
@@ -165,7 +163,6 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
             }
         }
 
-        // Si un fruit a été touché par le curseur, supprimez-le de la scène
         if (itemToDelete) {
     if (Fruit *fruit = dynamic_cast<Fruit*>(itemToDelete)) {
         if (fruit->getType() == Fruit::BOMB) {

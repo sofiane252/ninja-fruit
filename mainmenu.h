@@ -34,4 +34,4 @@ private:
     MainWindow *mainWindow;
 };
 
-#endif // MAINMENU_H
+#endif

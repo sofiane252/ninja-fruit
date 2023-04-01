@@ -35,9 +35,7 @@ private:
     int getWindowWidth();
     void setWindowHeight(int H);
     int getWindowHeight();
-    
-
-
+   
     QGraphicsScene *scene;
     QGraphicsView *view;
     QLabel *livesLabel;
@@ -53,4 +51,4 @@ private:
     int windowHeight;
 };
 
-#endif // MAINWINDOW_H
+#endif 

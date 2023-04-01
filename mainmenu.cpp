@@ -15,7 +15,7 @@ MainMenu::MainMenu(QWidget *parent) : QWidget(parent) {
     QButtonGroup *difficultyGroup = new QButtonGroup(difficultyBox);
 
     QRadioButton *easyButton = new QRadioButton("Facile", difficultyBox);
-    QRadioButton *mediumButton = new QRadioButton("Intermédiaire", difficultyBox);
+    QRadioButton *mediumButton = new QRadioButton("Moyen", difficultyBox);
     QRadioButton *hardButton = new QRadioButton("Difficile", difficultyBox);
 
     difficultyGroup->addButton(easyButton, 0);
@@ -39,7 +39,6 @@ MainMenu::MainMenu(QWidget *parent) : QWidget(parent) {
     layout->addWidget(startButton);
     layout->addWidget(quitButton);
 
-    // Connexion du signal buttonClicked du groupe de boutons radio à une méthode
     connect(difficultyGroup, QOverload<int>::of(&QButtonGroup::idClicked), this, &MainMenu::handleDifficultySelectionV2);
 
 }
